@@ -122,6 +122,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       setErrorMessage("Something went wrong during verification. Please try again.");
     }
   }
+};
   return (
     <>
       {/* Main wrapper div */}
@@ -191,7 +192,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     </>
   )
 
-};
+
 }
 export default App;
 
