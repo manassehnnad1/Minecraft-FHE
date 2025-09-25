@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 import Providers from './providers/PrivyProvider.tsx'
+import World1 from './pages/World1.tsx'
 
 const router = createBrowserRouter([
   {path:'/',
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
   {path:'*',
     element: <NotFoundPage />
 
+  },
+  {
+    path:'/world1',
+    element: <World1 />
   }
 ])
 

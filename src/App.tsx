@@ -4,13 +4,17 @@ import Logo from "./components/ui/Logo"
 import ButtonWallet from "./components/ui/ButtonWallet"
 import { usePrivy } from "@privy-io/react-auth"
 import { useState, useEffect} from "react"
-import Loader from "./components/ui/Loader"
+import { useNavigate } from "react-router-dom"
+import { ethers } from "ethers";
+import { initFhevm, createInstance  } from "@fhevm/sdk";
+
 
 
 
 
 
 const App = () => {
+  const navigate = useNavigate();
   const { authenticated, ready } = usePrivy();
   const [formData, setFormData] = useState({
     playerName: '',
@@ -18,6 +22,8 @@ const App = () => {
   });
   const [showLogoutAnimation, setShowLogoutAnimation] = useState(false);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [verified, setVerified] = useState(false);
 
   // Track authentication changes to trigger logout animation
   useEffect(() => {
@@ -43,19 +49,83 @@ const App = () => {
 
 
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission logic here
-  };
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setErrorMessage(null);
 
-  
-  return(
-    <>
+  if (!window.privy) {
+    setErrorMessage("Wallet provider not available");
+    return;
+  }
+
+  try {
+    // Contract address - replace with your deployed contract
+    const contractAddress = "0xYourDeployedContractAddress";
     
-    {/* Main wrapper div */}
-    <div className="">
-      <div className="absolute bottom-4 right-4 mr-6">
+    // 1️⃣ Connect wallet
+    const provider = new ethers.BrowserProvider(window.privy);
+    const signer = await provider.getSigner();
+    const network = await provider.getNetwork();
+    const userAddress = await signer.getAddress();
+
+    // 2️⃣ Initialize FHE SDK
+    await initFhevm();
+    const instance = await createInstance({
+      verifyingContractAddress: process.env.REACT_APP_INPUT_VERIFICATION_ADDRESS!,
+      kmsContractAddress: process.env.REACT_APP_KMS_VERIFIER_CONTRACT!,
+      aclContractAddress: process.env.REACT_APP_ACL_CONTRACT_ADDRESS!,
+      gatewayChainId: Number(network.chainId),
+    });
+
+    // 3️⃣ Validate age input
+    const ageNumber = Number(formData.age);
+    if (!ageNumber || ageNumber < 1 || ageNumber > 120) {
+      setErrorMessage("Enter a valid age (1-120)");
+      return;
+    }
+
+    // 4️⃣ Check age requirement BEFORE encryption
+    if (ageNumber < 18) {
+      setErrorMessage("You must be at least 18 years old to enter the world.");
+      return;
+    }
+
+    // 5️⃣ Encrypt age
+    const input = instance.createEncryptedInput(contractAddress, userAddress);
+    input.add32(ageNumber);
+    const encryptedInput = await input.encrypt();
+
+    const external = encryptedInput.handles[0];
+    const proof = encryptedInput.inputProof;
+
+    // 6️⃣ Create contract instance and send transaction
+    const contract = new ethers.Contract(contractAddress, AgeVerifierABI.abi, signer);
+    
+    console.log("Storing encrypted age on blockchain...");
+    const tx = await contract["verifyAge(externalEuint32,bytes)"](external, proof);
+    await tx.wait();
+
+    console.log("Age verification completed successfully");
+    
+    // 7️⃣ Navigate to world1 (we already validated age >= 18)
+    navigate("/world1");
+
+  } catch (err: any) {
+    console.error("Age verification error:", err);
+    
+    if (err.message?.includes("user rejected")) {
+      setErrorMessage("Transaction was rejected. Please try again.");
+    } else if (err.message?.includes("insufficient funds")) {
+      setErrorMessage("Insufficient funds for gas fees.");
+    } else {
+      setErrorMessage("Something went wrong during verification. Please try again.");
+    }
+  }
+  return (
+    <>
+      {/* Main wrapper div */}
+      <div className="">
+        <div className="absolute bottom-4 right-4 mr-6">
         <Signature />
       </div>
       <div className="absolute mt-6 ml-6 cursor-pointer">
@@ -99,6 +169,7 @@ const App = () => {
                 >
                   Enter World
                 </button>
+                {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
               </form>
             </div>
           ) : (
@@ -118,7 +189,8 @@ const App = () => {
       </div>
     </>
   )
-}
 
-export default App
+};
+}
+export default App;
 
