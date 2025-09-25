@@ -7,6 +7,7 @@ import { useState, useEffect} from "react"
 import { useNavigate } from "react-router-dom"
 import { ethers } from "ethers";
 import { initFhevm, createInstance  } from "@fhevm/sdk";
+import AgeVerifierABI from "../FHEVM/artifacts/contracts/FHEageverifier.sol/AgeVerifier.json";
 
 
 
