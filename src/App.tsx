@@ -26,7 +26,7 @@ const App = () => {
   const [showLogoutAnimation, setShowLogoutAnimation] = useState(false);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [verified, setVerified] = useState(false);
+ 
 
   // Track authentication changes to trigger logout animation
   useEffect(() => {
@@ -148,6 +148,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
   return (
     <>
+    {showLogoutAnimation && <div className="sr-only">Logging out...</div>}
       {/* Main wrapper div */}
       <div className="">
         <div className="absolute bottom-4 right-4 mr-6">
