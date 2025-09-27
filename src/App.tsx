@@ -120,6 +120,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         kmsContractAddress: '0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC',
         aclContractAddress: '0x687820221192C5B662b25367F70076A37bc79b6c',
         gatewayChainId: Number(network.chainId),
+        relayerUrl: 'https://relayer.testnet.zama.cloud}',
+
       });
 
       setErrorMessage("Encrypting age data...");
