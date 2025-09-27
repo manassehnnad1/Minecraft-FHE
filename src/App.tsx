@@ -116,9 +116,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       await initFhevm();
       
       const instance = await createInstance({
-        verifyingContractAddress: import.meta.env.VITE_INPUT_VERIFICATION_ADDRESS!,
-        kmsContractAddress: import.meta.env.VITE_KMS_VERIFIER_CONTRACT!,
-        aclContractAddress: import.meta.env.VITE_ACL_CONTRACT_ADDRESS!,
+        verifyingContractAddress: '0x7048C39f048125eDa9d678AEbaDfB22F7900a29F',
+        kmsContractAddress: '0x1364cBBf2cDF5032C47d8226a6f6FBD2AFCDacAC',
+        aclContractAddress: '0x687820221192C5B662b25367F70076A37bc79b6c',
         gatewayChainId: Number(network.chainId),
       });
 
