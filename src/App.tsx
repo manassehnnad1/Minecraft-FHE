@@ -2,7 +2,7 @@
 import Signature from "./components/ui/Signature"
 import Logo from "./components/ui/Logo"
 import ButtonWallet from "./components/ui/ButtonWallet"
-import { usePrivy } from "@privy-io/react-auth"
+import { usePrivy, useWallets } from "@privy-io/react-auth"
 import { useState, useEffect} from "react"
 import { useNavigate } from "react-router-dom"
 import { ethers } from "ethers";
@@ -14,9 +14,11 @@ import AgeVerifierABI from "../FHEVM/artifacts/contracts/FHEageverifier.sol/AgeV
 
 
 
+
 const App = () => {
   const navigate = useNavigate();
   const { authenticated, ready } = usePrivy();
+  const { wallets } = useWallets();
   const [formData, setFormData] = useState({
     playerName: '',
     age: '',
@@ -31,9 +33,15 @@ const App = () => {
     if (ready) {
       if (wasAuthenticated && !authenticated) {
         // User just logged out
+        setErrorMessage(null); // Clear error message
+      setFormData({ playerName: '', age: '' }); 
         setShowLogoutAnimation(true);
         setTimeout(() => setShowLogoutAnimation(false), 2000); // Show for 2 seconds
       }
+      if (!wasAuthenticated && authenticated) {
+      // User just logged in - clear any previous error messages
+      setErrorMessage(null);
+    }
       setWasAuthenticated(authenticated);
     }
   }, [authenticated, ready, wasAuthenticated]);
@@ -54,75 +62,90 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   setErrorMessage(null);
 
-  if (!window.privy) {
-    setErrorMessage("Wallet provider not available");
+  const contractAddress = '0xA1Ece5108AD0B428d9CAb16C549a2b641dB754D3';
+  
+  if (!authenticated || wallets.length === 0) {
+    setErrorMessage("Please connect your wallet first");
     return;
   }
 
   try {
-    // Contract address - replace with your deployed contract
-    const contractAddress = "0xYourDeployedContractAddress";
-    
-    // 1️⃣ Connect wallet
-    const provider = new ethers.BrowserProvider(window.privy);
+    const wallet = wallets[0];
+    const ethereumProvider = await wallet.getEthereumProvider();
+    const provider = new ethers.BrowserProvider(ethereumProvider);
     const signer = await provider.getSigner();
     const network = await provider.getNetwork();
     const userAddress = await signer.getAddress();
 
-    // 2️⃣ Initialize FHE SDK
-    await initFhevm();
-    const instance = await createInstance({
-      verifyingContractAddress: process.env.REACT_APP_INPUT_VERIFICATION_ADDRESS!,
-      kmsContractAddress: process.env.REACT_APP_KMS_VERIFIER_CONTRACT!,
-      aclContractAddress: process.env.REACT_APP_ACL_CONTRACT_ADDRESS!,
-      gatewayChainId: Number(network.chainId),
-    });
-
-    // 3️⃣ Validate age input
+    // Validate age
     const ageNumber = Number(formData.age);
     if (!ageNumber || ageNumber < 1 || ageNumber > 120) {
       setErrorMessage("Enter a valid age (1-120)");
       return;
     }
-
-    // 4️⃣ Check age requirement BEFORE encryption
     if (ageNumber < 18) {
       setErrorMessage("You must be at least 18 years old to enter the world.");
       return;
     }
 
-    // 5️⃣ Encrypt age
-    const input = instance.createEncryptedInput(contractAddress, userAddress);
-    input.add32(ageNumber);
-    const encryptedInput = await input.encrypt();
-
-    const external = encryptedInput.handles[0];
-    const proof = encryptedInput.inputProof;
-
-    // 6️⃣ Create contract instance and send transaction
     const contract = new ethers.Contract(contractAddress, AgeVerifierABI.abi, signer);
-    
-    console.log("Storing encrypted age on blockchain...");
-    const tx = await contract["verifyAge(externalEuint32,bytes)"](external, proof);
-    await tx.wait();
 
-    console.log("Age verification completed successfully");
+    // Check if we're in development mode
+    const isDevelopment = import.meta.env.DEV;
     
-    // 7️⃣ Navigate to world1 (we already validated age >= 18)
-    navigate("/world1");
+    if (isDevelopment) {
+      // Use mock function in development to avoid WebAssembly errors
+      console.log("Development mode: using mock verification");
+      setErrorMessage("Processing age verification...");
+      
+      const tx = await contract.verifyAgeMock(ageNumber);
+      await tx.wait();
+      
+      console.log("Mock age verification successful!");
+      setErrorMessage("Age verified successfully! (Development mode)");
+      
+      setTimeout(() => {
+        navigate("/world1");
+      }, 1000);
+      
+    } else {
+      // Try full FHE in production
+      console.log("Production mode: attempting FHE encryption");
+      setErrorMessage("Initializing secure encryption...");
+      
+      await initFhevm();
+      
+      const instance = await createInstance({
+        verifyingContractAddress: import.meta.env.VITE_INPUT_VERIFICATION_ADDRESS!,
+        kmsContractAddress: import.meta.env.VITE_KMS_VERIFIER_CONTRACT!,
+        aclContractAddress: import.meta.env.VITE_ACL_CONTRACT_ADDRESS!,
+        gatewayChainId: Number(network.chainId),
+      });
+
+      setErrorMessage("Encrypting age data...");
+      
+      const input = instance.createEncryptedInput(contractAddress, userAddress);
+      input.add32(ageNumber);
+      const encryptedInput = await input.encrypt();
+
+      const external = encryptedInput.handles[0];
+      const proof = encryptedInput.inputProof;
+
+      setErrorMessage("Storing encrypted age on blockchain...");
+      
+      const tx = await contract["verifyAge(externalEuint32,bytes)"](external, proof);
+      await tx.wait();
+      
+      console.log("FHE age verification successful!");
+      navigate("/world1");
+    }
 
   } catch (err: any) {
     console.error("Age verification error:", err);
-    
-    if (err.message?.includes("user rejected")) {
-      setErrorMessage("Transaction was rejected. Please try again.");
-    } else if (err.message?.includes("insufficient funds")) {
-      setErrorMessage("Insufficient funds for gas fees.");
-    } else {
-      setErrorMessage("Something went wrong during verification. Please try again.");
-    }
+    setErrorMessage(`Verification failed: ${err.message}`);
   }
 };
+
   return (
     <>
       {/* Main wrapper div */}
@@ -171,7 +194,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 >
                   Enter World
                 </button>
-                {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+                {errorMessage && <p className="text-red-500 mt-4 font-tektur">{errorMessage}</p>}
               </form>
             </div>
           ) : (
@@ -191,8 +214,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       </div>
     </>
   )
+};
 
 
-}
 export default App;
 

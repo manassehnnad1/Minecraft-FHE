@@ -7,6 +7,9 @@ import NotFoundPage from './pages/NotFoundPage.tsx'
 import Providers from './providers/PrivyProvider.tsx'
 import World1 from './pages/World1.tsx'
 
+
+
+
 const router = createBrowserRouter([
   {path:'/',
     element: <App />
