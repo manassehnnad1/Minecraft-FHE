@@ -1,10 +1,10 @@
-import { Link, BrowserRouter, Routes, Route } from "react-router-dom"
+
 import { usePrivy } from "@privy-io/react-auth"
 import Loader from "./Loader";
 import { useState } from "react";
 
 const ButtonWallet = () => {
-    const { login, user, logout, authenticated, ready} = usePrivy();
+    const { login, user, logout, authenticated} = usePrivy();
     const [loading, setLoading] = useState(false);
 
     const handleLogout = async () => {
