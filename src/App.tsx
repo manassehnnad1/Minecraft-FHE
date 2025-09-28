@@ -91,7 +91,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const contract = new ethers.Contract(contractAddress, AgeVerifierABI.abi, signer);
 
     // Check if we're in development mode
-    const isDevelopment = import.meta.env.DEV;
+    const isDevelopment = true;
     
     if (isDevelopment) {
       // Use mock function in development to avoid WebAssembly errors
@@ -130,6 +130,10 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       const input = instance.createEncryptedInput(contractAddress, userAddress);
       input.add32(ageNumber);
       const encryptedInput = await input.encrypt();
+
+      //added new line
+      console.log(" Full encrypted input payload:", JSON.stringify(encryptedInput, null, 2));
+
 
       const external = encryptedInput.handles[0];
       const proof = encryptedInput.inputProof;
