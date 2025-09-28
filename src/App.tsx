@@ -129,7 +129,15 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       
       const input = instance.createEncryptedInput(contractAddress, userAddress);
       input.add32(ageNumber);
-      const encryptedInput = await input.encrypt();
+     let encryptedInput;
+try {
+  encryptedInput = await input.encrypt();
+  console.log("✅ Full encrypted input payload:", JSON.stringify(encryptedInput, null, 2));
+} catch (err) {
+  console.error("❌ Encryption failed before sending to relayer:", err);
+  setErrorMessage("Encryption step failed , see console for details.");
+  return;
+}
 
       //added new line
       console.log(" Full encrypted input payload:", JSON.stringify(encryptedInput, null, 2));
