@@ -15,6 +15,7 @@ import AgeVerifierABI from "../FHEVM/artifacts/contracts/FHEageverifier.sol/AgeV
 
 
 
+
 const App = () => {
   const navigate = useNavigate();
   const { authenticated, ready } = usePrivy();
@@ -105,7 +106,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       setErrorMessage("Age verified successfully!");
       
       setTimeout(() => {
-        navigate("/world1");
+        navigate("/World1");
       }, 1000);
       
     } else {
@@ -144,7 +145,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       await tx.wait();
       
       console.log("FHE age verification successful!");
-      navigate("/world1");
+      navigate("/World1");
     }
 
   } catch (err: any) {
@@ -167,7 +168,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
       
 
-       <div className="absolute items-center justify-center flex flex-col ml-96 mt-72">
+       <div className="min-h-screen flex items-center justify-center">
 
           {ready && authenticated ? (
             // Show form when logged in
