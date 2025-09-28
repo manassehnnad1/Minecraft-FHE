@@ -10,7 +10,7 @@ const World1 = () => {
           className="w-[600px] h-[300px] rounded-lg shadow-2xl border-4 border-amber-600 mx-auto relative overflow-hidden"
         >
           <img 
-            src="/src/assets/world.jpg" 
+            src="/world.jpg" 
             alt="Minecraft World" 
             className="w-full h-full object-cover rounded-lg"
           />

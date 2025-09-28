@@ -145,7 +145,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       await tx.wait();
       
       console.log("FHE age verification successful!");
-      navigate("/World1");
+      navigate("/world1");
     }
 
   } catch (err: any) {
