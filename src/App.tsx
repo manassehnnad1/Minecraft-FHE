@@ -91,7 +91,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const contract = new ethers.Contract(contractAddress, AgeVerifierABI.abi, signer);
 
     // Check if we're in development mode
-    const isDevelopment = true;
+    const isDevelopment = import.meta.env.DEV;
     
     if (isDevelopment) {
       // Use mock function in development to avoid WebAssembly errors
@@ -102,7 +102,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       await tx.wait();
       
       console.log("Mock age verification successful!");
-      setErrorMessage("Age verified successfully! (Development mode)");
+      setErrorMessage("Age verified successfully!");
       
       setTimeout(() => {
         navigate("/world1");
