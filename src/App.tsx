@@ -168,11 +168,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
       
 
-       <div className="min-h-screen flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center">
 
           {ready && authenticated ? (
             // Show form when logged in
-            <div className="text-center ml-36">
+            <div className="text-center">
               <h1 className="text-amber-100 font-tektur text-6xl font-bold mb-8">Welcome Player!</h1>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
