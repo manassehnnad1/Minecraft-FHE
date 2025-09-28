@@ -208,9 +208,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             </div>
           ) : (
             <>
-            <h1 className="text-amber-100 font-tektur text-8xl font-bold ">Minecraft World</h1>
-            <h1 className="text-amber-100 font-tektur text-8xl font-bold">Gateway</h1>
-            <p className="text-amber-100 font-tektur text-2xl">Login to get started</p>
+            <div className="text-center">
+              <h1 className="text-amber-100 font-tektur text-8xl font-bold ">Minecraft World</h1>
+             <h1 className="text-amber-100 font-tektur text-8xl font-bold">Gateway</h1>
+             <p className="text-amber-100 font-tektur text-2xl">Login to get started</p>
+            </div>
             </>
 
           )}
