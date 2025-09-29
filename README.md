@@ -4,6 +4,8 @@ A Privacy-preserving gateway to exclusive minecraft worlds using the Fully Homom
 
 This application demonstrates how users can prove they meet age requirements (18+) without revealing their exact age through cryptographic privacy techniques. Users connect their wallet, submit their age through encrypted verification, and gain access to a virtual Minecraft world upon successful verification.
 
+Here is a detailed guide of my development incase you want to reproduce: https://medium.com/@islathebuilder/build-your-first-privacy-preserving-dapp-with-fhevm-by-zama-2ecfdd9aae56
+
 Stack: 
 > React, ts, ethers.js
 
@@ -29,4 +31,5 @@ It's pretty straight-forward!
 guide on how to test app:
 
 https://drive.google.com/file/d/1Zu5L5p56jwzHHrB3maxgS_XO4Azfn-Jh/view
+
 
